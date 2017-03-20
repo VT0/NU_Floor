@@ -1,0 +1,6 @@
+# Files that should not be included in git repo
+
+.DS_Store
+*.pyc
+Test_Plots/*
+Saved_Files/*
