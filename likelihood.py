@@ -17,7 +17,7 @@ b8nu = np.loadtxt(path + '/Nu_Flux/B8NeutrinoFlux.dat')
 b8nu_spectrum = interp1d(b8nu[:,0], b8nu[:,1], kind='cubic', fill_value=0., bounds_error=False)
 
 gF = 1.16637 * 10. ** -5. # Gfermi in GeV^-2
-sw = np.sqrt(0.2312) # sin(theat_weak)^2
+sw = 0.2312 # sin(theat_weak)^2
 MeVtofm = 0.0050677312
 s_to_yr = 3.154*10.**7.
 
@@ -128,24 +128,28 @@ class Likelihood_analysis(object):
     
 
 class Nu_spec(object):
+    # Think about defining some of these neutino parameters as variables in constants.py (e.g. mean flux)
     
     def nu_rate(self, nu_component, er, element_info):
         mT, Z, A, xi = element_info
-        conversion_factor = xi / mT * s_to_yr * (0.938 / (1.78 * 10.**-27.)) \
-            * 10**-3. / (0.51 * 10.**14.)**2. * (A-Z) / 100.
-        
+        conversion_factor = xi / mT * s_to_yr * (0.938 / (1.66 * 10.**-27.)) \
+            * 10**-3. / (0.51 * 10.**14.)**2.
+        # Where is this (A-Z)/100 coming from? Should not be there???
+    
         diff_rate = np.zeros_like(er)
         for i,e in enumerate(er):
             e_nu_min = np.sqrt(mT * e / 2.)
             e_nu_max = 16.18 # B8 only
             b8_mean_f = 5.69 * 10. ** 6. # B8 cm^-2 s^-1
-            diff_rate[i] = quad(self.nu_recoil_spec, e_nu_min, e_nu_max, args=(e, mT, Z, A, nu_component), limit=50)[0]
+            diff_rate[i] = quad(self.nu_recoil_spec, e_nu_min, e_nu_max,
+                                args=(e, mT, Z, A, nu_component), limit=50)[0]
             diff_rate[i] *= b8_mean_f * conversion_factor
 
         return diff_rate
 
     def max_er_from_nu(self, enu, mT):
-        # return 2. * enu**2. / (mT + 2. * enu) -- This formula is in 1307.5458, but I dont think its correct
+        # return 2. * enu**2. / (mT + 2. * enu) # -- This formula is in 1307.5458, but it is
+        # not consistent with the numbers they use in other papers...
         return 2. * enu**2. / mT
     
     def nu_recoil_spec(self, enu, er, mT, Z, A, nu_comp):

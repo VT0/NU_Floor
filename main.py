@@ -27,7 +27,7 @@ model = "sigma_si"  # [sigma_si, sigma_sd, sigma_anapole, sigma_magdip, sigma_el
 
 coupling = "fnfp" + model[5:]
 mass = 6.
-sigmap = 4.*10.**-45.
+sigmap = 7.*10.**-45.
 fnfp = 1.
 delta = 0.  # Only works for elastic scattering at this point
 
