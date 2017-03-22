@@ -4,3 +4,4 @@
 *.pyc
 Test_Plots/*
 Saved_Files/*
+current_runs/*
