@@ -7,6 +7,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib as mpl
 from experiments import *
 from likelihood import *
+from helpers import *
+from rate_UV import *
 
 import matplotlib.patheffects as PathEffects
 import matplotlib.gridspec as gridspec
@@ -80,7 +82,9 @@ def neutrino_specturm(Emin=0.1, Emax=1000., fs=18, save=True):
     return
 
 
-def neutrino_recoils(Emin=0.001, Emax=100., element='germanium', fs=18, save=True):
+def neutrino_recoils(Emin=0.001, Emax=100., element='germanium', fs=18, save=True,
+                     mass=6., sigmap=4.*10**-45., model='sigma_si', fnfp=1.,
+                     delta=0., GF=False, time_info=False):
     filename = test_plots + 'NeutrinoRecoils_in_' + element + '.pdf'
 
     experiment_info, Qmin, Qmax = Element_Info(element)
@@ -92,6 +96,21 @@ def neutrino_recoils(Emin=0.001, Emax=100., element='germanium', fs=18, save=Tru
     nub8spec = np.zeros_like(erb8)
     for iso in experiment_info:
         nub8spec += b8_flux.nu_rate('B8', erb8, iso)
+    
+    coupling = "fnfp" + model[5:]
+
+    drdq_params = default_rate_parameters.copy()
+    drdq_params['element'] = element
+    drdq_params['mass'] = mass
+    drdq_params[model] = sigmap
+    drdq_params[coupling] = fnfp
+    drdq_params['delta'] = delta
+    drdq_params['GF'] = GF
+    drdq_params['time_info'] = time_info
+
+    er_list = np.logspace(np.log10(Emin), np.log10(Emax), 200)
+    time_list = np.zeros_like(er_list)
+    dm_spec = dRdQ(er_list, time_list, **drdq_params) * 10. ** 3. * s_to_yr
 
     pl.figure()
     ax = pl.gca()
@@ -100,6 +119,8 @@ def neutrino_recoils(Emin=0.001, Emax=100., element='germanium', fs=18, save=Tru
     ax.set_ylabel(r'Event Rate  [${\rm ton}^{-1} {\rm yr}^{-1} {\rm keV}^{-1}$]', fontsize=fs)
 
     pl.plot(erb8, nub8spec, 'r', lw=1)
+    pl.plot(er_list, dm_spec, 'b', lw=1)
+    
     plt.xlim(xmin=Emin, xmax=Emax)
     plt.ylim(ymin=10.**-5., ymax=10.**8.)
     ax.set_xscale("log")
